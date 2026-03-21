@@ -28,7 +28,7 @@ def log_entry(review_id, review_text, review_timestamp, analysis, generated_resp
     INSERT INTO review_logs VALUES (
         ?, ?, ?, ?, ?, ?, ?, ?
     )""",           
-    (review_id, review_text, review_timestamp, analysis, generated_response, safety_passed, posting_method, response_timestamp)
+    (review_id, review_text, review_timestamp, json.dumps(analysis), generated_response, safety_passed, posting_method, response_timestamp)
     )         
     conn.commit()                           
     conn.close()  

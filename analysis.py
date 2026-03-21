@@ -59,6 +59,7 @@ def extract_name(username):
 
     if not username:
         return "valued customer"
+    
     first_name = username.split(' ')[0]
 
     return first_name
