@@ -35,7 +35,7 @@ async def fetch_reviews():
     return {"message": "fetch triggered"}
 
 
-
+#test
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
