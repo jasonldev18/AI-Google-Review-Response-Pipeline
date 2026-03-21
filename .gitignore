@@ -1,5 +1,6 @@
 .env
 venv/
-client_secret.json
+client_secrets.json
 token.json
+database.db
 
