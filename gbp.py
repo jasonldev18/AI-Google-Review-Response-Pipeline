@@ -4,7 +4,8 @@ import os
 from google_auth_oauthlib.flow import InstalledAppFlow
 import requests
 from dotenv import load_dotenv
-
+from google.cloud import secretmanager
+import json
 
 
 load_dotenv()
@@ -17,26 +18,26 @@ def get_credentials():
 
     creds = None
 
-    #If access token is expired and refresh token exists, request for new access token and rewrite token.json with the new tokens
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json')
-    
-        if creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+    # Read token.json from Secret Manager
+    secret_client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/vast-service-484419-r9/secrets/TOKEN_JSON/versions/latest"
+    response = secret_client.access_secret_version(request={"name": name})
+    token_data = json.loads(response.payload.data.decode("UTF-8"))
 
-            with open('token.json', 'w') as f:
-                f.write(creds.to_json())
-    
-    else:
+    creds = Credentials.from_authorized_user_info(token_data)
 
-        #initializes flow by reading credentials and specifying scope
-        #runs local server to get user credentials
-        flow = InstalledAppFlow.from_client_secrets_file('client_secrets.json', SCOPES)
-        creds = flow.run_local_server(port=0)
-        
-        with open('token.json', 'w') as f:
-            f.write(creds.to_json())
+    if creds.expired and creds.refresh_token:
+        creds.refresh(Request())
 
+        # Write refreshed token back to Secret Manager
+        new_secret = secretmanager.SecretManagerServiceClient()
+        parent = f"projects/vast-service-484419-r9/secrets/TOKEN_JSON"
+        new_secret.add_secret_version(
+            request={
+                "parent": parent,
+                "payload": {"data": creds.to_json().encode("UTF-8")}
+            }
+        )
 
     return creds
 
