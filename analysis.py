@@ -39,12 +39,18 @@ def risk_flag(review):
 
 
 
-def analysis(review):
+def analysis(review, rating):
 
-    sentiment_result = sentiment(review)
-    topic_result = topic(review)
-    risk_flag_result = risk_flag(review)
+    if not review:
+        sentiment_result = star_review(rating)
+        topic_result = None
+        risk_flag_result = None
+    else:
+        sentiment_result = sentiment(review)
+        topic_result = topic(review)
+        risk_flag_result = risk_flag(review)
 
+        
     result = {
         'review': review,
         'sentiment': sentiment_result,
@@ -63,6 +69,17 @@ def extract_name(username):
     first_name = username.split(' ')[0]
 
     return first_name
+
+
+#reviews with no comments
+def star_review(star_rating):
+
+    if star_rating == 'FIVE' or star_rating == 'FOUR':
+        return "Positive"
+    elif star_rating == 'THREE':
+        return "Neutral"
+    else:
+        return "Negative"
 
 
     

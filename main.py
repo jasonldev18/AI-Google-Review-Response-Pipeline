@@ -3,7 +3,6 @@ load_dotenv()
 
 from fastapi import FastAPI
 import uvicorn
-from apscheduler.schedulers.background import BackgroundScheduler
 import os
 from contextlib import asynccontextmanager
 from gbp import fetch_reviews, post_response
@@ -36,10 +35,10 @@ def process_reviews():
         if review_time < cutoff or 'reviewReply' in review:
             continue
 
-        if 'comment' not in review:
+        if 'comment' not in review and 'starRating' not in review:
             continue
 
-        analysis_result = analysis(review['comment'])
+        analysis_result = analysis(review.get('comment', ''), review['starRating'])
         reviewer_name = extract_name(review['reviewer']['displayName'])
 
         response = generate_response(analysis_result, reviewer_name)
@@ -53,20 +52,16 @@ def process_reviews():
             posting_method = 'draft'
 
     
-        log_entry(review['reviewId'], review['comment'], review_time, analysis_result, response, safety_result['passed'], posting_method, datetime.now(timezone.utc))
+        log_entry(review['reviewId'], review.get('comment', ''), review_time, analysis_result, response, safety_result['passed'], posting_method, datetime.now(timezone.utc))
     
     
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(process_reviews, 'interval', hours = 24)
 
 #handles startup and shutdown of app
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db
-    scheduler.start()
+    init_db()
     yield
-    scheduler.shutdown()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -83,7 +78,14 @@ async def manual_fetch():
     return {"message": "fetch triggered"}
 
 
-
+@app.get("/debug")
+async def debug():
+    return {
+        "claude_key_set": bool(os.getenv("CLAUDE_API_KEY")),
+        "gbp_account": bool(os.getenv("GBP_ACCOUNT_ID")),
+        "gbp_location": bool(os.getenv("GBP_LOCATION_ID")),
+        "google_client_id": bool(os.getenv("GOOGLE_CLIENT_ID")),
+    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
