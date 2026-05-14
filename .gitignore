@@ -1,4 +1,8 @@
 .env
-
 venv/
-
+token.json
+client_secrets.json
+refresh_token.py
+__pycache__/
+*.pyc
+database.db

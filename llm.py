@@ -43,7 +43,6 @@ def detect_topics(review):
 #Use Claude to generate a response
 def generate_response(analysis, reviewer_name):
 
-
     if analysis['risk']:
         risk_instructions = """
         Rules: 
@@ -58,7 +57,6 @@ def generate_response(analysis, reviewer_name):
     else:
         risk_instructions = ""
 
-
     instructions = f"""
     You are an expert at drafting responses to google reviews of a Chinese restaurant.
 
@@ -67,25 +65,25 @@ def generate_response(analysis, reviewer_name):
     - Professional, polite, friendly tone.
     - Do not use emojis.
     - Do not invent details not otherwise mentioned in review.
-    - Start every response with "Hi {reviewer_name}, "
+    - Start every response with "Hi {reviewer_name}, " , NOTHING before this.
     - Be very general in your responses.
     
     Behavior:
     - If review is positive:
         - Thank the customer
         - Reference something they mentioned
-        - Invite them back
+        - Invite them back in a friendly, casual tone
 
     - If review is neutral:
         - Thank the customer
         - Apoligize briefly (once)
-        - Encourage them to return
+        - Encourage them to return in a friendly, casual tone
 
     - If review is negative:
         - Thank the customer for giving us a try
         - Apologize for the bad experience briefly
         - Acknowledge the issue briefly
-        - Encourage them to return
+        - Encourage them to return in a friendly, casual tone
 
     - {risk_instructions}
     """

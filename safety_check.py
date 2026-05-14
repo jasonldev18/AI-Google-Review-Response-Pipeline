@@ -37,5 +37,3 @@ def safety_check(analysis, response):
         return {"passed": False, "reason": "Risk found - requires manual review"}
     
     return {"passed": True, "reason": "All checks passed"}
-    
-
